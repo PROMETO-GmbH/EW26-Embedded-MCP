@@ -129,7 +129,6 @@ secrets.py.example   # WiFi credentials template
 test_th02.py         # Standalone I2C sensor test
 test_ws2812.py       # Standalone LED ring test
 test_display.py      # Standalone display test
-ws2812b_ring_mount.scad  # Optional 3D-printable ring mount (OpenSCAD)
 ```
 
 ---
