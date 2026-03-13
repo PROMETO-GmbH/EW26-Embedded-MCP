@@ -4,7 +4,7 @@
 
 This repository contains the firmware and host client from the live demo. A Raspberry Pi Pico W acts as an MCP server; a Mac runs a local LLM (Ollama) that talks to it over TCP via the Model Context Protocol.
 
-> **Want the full setup guide?** Download the complete step-by-step PDF (hardware sourcing, soldering, flashing, troubleshooting) at **[prometo.de/embedded-mcp](https://prometo.de/embedded-mcp)** — free with email opt-in.
+> **Want the full setup guide?** Download the complete step-by-step PDF (hardware sourcing, soldering, flashing, troubleshooting) at **[prometo.ai/mcp-for-embedded](https://www.prometo.ai/mcp-for-embedded/)** — free with email opt-in.
 
 ---
 
