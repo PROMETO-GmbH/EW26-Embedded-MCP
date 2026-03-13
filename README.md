@@ -12,14 +12,14 @@ This repository contains the firmware and host client from the live demo. A Rasp
 
 ```
 ┌─────────────────────────────────┐        TCP :3141 (WiFi)        ┌────────────────────────────┐
-│         Mac / Linux Host        │ ◄─────────────────────────────► │     Raspberry Pi Pico W    │
-│                                 │                                  │                            │
-│  Ollama (llama3.2 or similar)   │   JSON-RPC 2.0 over newline-    │  MCP server  (MicroPython) │
-│  └─ mcp_client.py               │   delimited TCP stream          │  └─ main.py                │
-│      └─ agentic loop            │                                  │      ├─ read_sensor        │
-│          └─ tool calls via MCP  │                                  │      ├─ set_leds           │
-└─────────────────────────────────┘                                  │      └─ show_message       │
-                                                                      └────────────────────────────┘
+│         Mac / Linux Host        │ ◄─────────────────────────────►│     Raspberry Pi Pico W    │
+│                                 │                                │                            │
+│  Ollama (llama3.2 or similar)   │   JSON-RPC 2.0 over newline-   │  MCP server  (MicroPython) │
+│  └─ mcp_client.py               │   delimited TCP stream         │  └─ main.py                │
+│      └─ agentic loop            │                                │      ├─ read_sensor        │
+│          └─ tool calls via MCP  │                                │      ├─ set_leds           │
+└─────────────────────────────────┘                                │      └─ show_message       │
+                                                                   └────────────────────────────┘
 ```
 
 The LLM never touches the hardware directly. It issues MCP `tools/call` requests; the Pico W executes them and returns JSON results. Footprint on the Pico W: **<100 KB flash, <50 KB RAM**, no heap allocation after boot.
@@ -114,7 +114,7 @@ python3 mcp_client.py 192.168.x.x --prompt "What is the temperature? Set the LED
 
 | Tool | What it does |
 |------|-------------|
-| `read_sensor` | Returns temperature (°C) and humidity (%) from the HTU21D |
+| `read_sensor` | Returns temperature (°C) and humidity (%) from the TH02 |
 | `set_leds` | Sets all 8 ring LEDs to a named colour (off / red / green / blue / orange / white) |
 | `show_message` | Displays up to 3 lines of text on the LCD |
 
@@ -130,6 +130,20 @@ test_th02.py         # Standalone I2C sensor test
 test_ws2812.py       # Standalone LED ring test
 test_display.py      # Standalone display test
 ```
+
+---
+
+## Decision Rules and Organisational Implementation
+
+The demo is intentionally minimal. Three design rules hold the architecture together — violate any one of them and the system breaks in ways that are hard to debug on constrained hardware:
+
+1. **No dynamic allocation after boot** — all buffers are statically sized at compile time. Heap fragmentation on a device without an MMU accumulates silently and causes non-deterministic hangs in the field.
+2. **Tools only** — `tools/list` and `tools/call`. Adding resource serving or sampling inverts the architecture and breaks the fixed-buffer constraint.
+3. **Transport behind three operations** — `init()`, `read()`, `write()`. The protocol layer has no knowledge of the physical transport. Swapping WiFi for UART or CAN is a single module change.
+
+Moving this from a demo to a production deployment — and embedding it into an engineering organisation — involves more than hardening the firmware. It requires decisions about compliance mapping (IEC 62443, ISO 21434, ISO 26262), security threat modelling for your specific deployment context, and integrating the AI toolchain into existing development and testing workflows.
+
+PROMETO offers structured guidance for all three stages: architecture evaluation, prototype hardening, and full organisational integration. Details and engagement models are in the companion guide.
 
 ---
 
